@@ -263,7 +263,7 @@ fn build_cli() -> Command {
     - chacha20poly1305     : ChaCha20-Poly1305 (fast)  
     - xchacha20poly1305    : XChaCha20-Poly1305 (large nonce)
 
-🛡️  SECURITY (enabled by default):
+SECURITY (enabled by default):
     - Integrity verification (HMAC-SHA256)
     - Secure deletion of original files
 ")
@@ -275,7 +275,7 @@ fn main() {
     let config = match Config::from_matches(&matches) {
         Ok(config) => config,
         Err(e) => {
-            eprintln!("❌ Configuration error: {}", e);
+            eprintln!("Configuration error: {}", e);
             process::exit(1);
         }
     };
@@ -292,19 +292,19 @@ fn main() {
 
     match result {
         Ok(_) => {
-            println!("🎉 Operation completed successfully!");
+            println!("Operation completed successfully.");
         }
         Err(e) => {
-            eprintln!("❌ Operation failed: {}", e);
+            eprintln!("Operation failed: {}", e);
             
             // Print additional context for common errors
             if let Some(crypto_error) = e.downcast_ref::<crypto::CryptError>() {
                 match crypto_error {
                     crypto::CryptError::InvalidKey { .. } => {
-                        eprintln!("💡 Tip: Use a hex key (64 chars) or any password");
+                        eprintln!("Tip: Use a hex key (64 chars) or any password");
                     }
                     crypto::CryptError::DecryptionFailed { .. } => {
-                        eprintln!("💡 Tip: Check your key and ensure the file isn't corrupted");
+                        eprintln!("Tip: Check your key and ensure the file isn't corrupted");
                     }
                     _ => {}
                 }
@@ -328,7 +328,7 @@ fn run_batch_encrypt(config: &Config) -> Result<()> {
     let files = batch_processor.find_files(Some(&config.source_path))?;
     
     if files.is_empty() {
-        println!("⚠️  No files found matching the specified patterns");
+        println!("No files found matching the specified patterns.");
         return Ok(());
     }
     
@@ -339,22 +339,22 @@ fn run_batch_encrypt(config: &Config) -> Result<()> {
     let key = match &config.key {
         Some(k) => {
             if config.verbose {
-                println!("🔑 Using provided key for all files");
+                println!("Using provided key for all files.");
             }
             k.clone()
         }
         None => {
             let generated_key = crypto_engine.generate_key();
-            println!("\n🔑 GENERATED ENCRYPTION KEY (batch operation):");
+            println!("\nGENERATED ENCRYPTION KEY (batch operation):");
             println!("   {}", generated_key);
-            println!("⚠️  IMPORTANT: Save this key securely - you'll need it for decryption!");
+            println!("IMPORTANT: Save this key securely - you'll need it for decryption!");
             println!("   Copy this key to a safe location before proceeding.");
             
             // Save key to file if specified
             if let Some(key_file) = &config.save_key_file {
                 match save_key_to_file(&generated_key, key_file) {
-                    Ok(()) => println!("💾 Key saved to file: {}", key_file),
-                    Err(e) => eprintln!("⚠️  Warning: Failed to save key to file: {}", e),
+                    Ok(()) => println!("Key saved to file: {}", key_file),
+                    Err(e) => eprintln!("Warning: Failed to save key to file: {}", e),
                 }
             }
             
@@ -372,7 +372,7 @@ fn run_batch_encrypt(config: &Config) -> Result<()> {
     let mut failed = 0;
     
     for (index, file_path) in files.iter().enumerate() {
-        println!("\n📄 Processing file {}/{}: {}", index + 1, files.len(), file_path.display());
+        println!("\nProcessing file {}/{}: {}", index + 1, files.len(), file_path.display());
         
         let file_config = Config {
             source_path: file_path.clone(),
@@ -397,26 +397,26 @@ fn run_batch_encrypt(config: &Config) -> Result<()> {
                     match SecureDelete::shred_standard(file_path, config.verbose) {
                         Ok(_) => {
                             if config.verbose {
-                                println!("   ✅ Original file securely deleted");
+                                println!("   Original file securely deleted.");
                             }
                         }
                         Err(e) => {
-                            eprintln!("   ⚠️  Failed to shred original file: {}", e);
+                            eprintln!("   Failed to shred original file: {}", e);
                         }
                     }
                 }
             }
             Err(e) => {
-                eprintln!("   ❌ Failed to encrypt {}: {}", file_path.display(), e);
+                eprintln!("   Failed to encrypt {}: {}", file_path.display(), e);
                 failed += 1;
             }
         }
     }
     
-    println!("\n🎯 Batch Operation Complete:");
-    println!("   ✅ Successfully encrypted: {} files", successful);
+    println!("\nBatch operation complete:");
+    println!("   Successfully encrypted: {} files", successful);
     if failed > 0 {
-        println!("   ❌ Failed to encrypt: {} files", failed);
+        println!("   Failed to encrypt: {} files", failed);
     }
     
     Ok(())
@@ -435,7 +435,7 @@ fn run_batch_decrypt(config: &Config) -> Result<()> {
     let files = batch_processor.find_files(Some(&config.source_path))?;
     
     if files.is_empty() {
-        println!("⚠️  No files found matching the specified patterns");
+        println!("No files found matching the specified patterns.");
         return Ok(());
     }
     
@@ -449,7 +449,7 @@ fn run_batch_decrypt(config: &Config) -> Result<()> {
     let mut failed = 0;
     
     for (index, file_path) in files.iter().enumerate() {
-        println!("\n📄 Processing file {}/{}: {}", index + 1, files.len(), file_path.display());
+        println!("\nProcessing file {}/{}: {}", index + 1, files.len(), file_path.display());
         
         let file_config = Config {
             source_path: file_path.clone(),
@@ -475,11 +475,11 @@ fn run_batch_decrypt(config: &Config) -> Result<()> {
                     match SecureDelete::shred_standard(file_path, config.verbose) {
                         Ok(_) => {
                             if config.verbose {
-                                println!("   ✅ Encrypted file securely deleted");
+                                println!("   Encrypted file securely deleted.");
                             }
                         }
                         Err(e) => {
-                            eprintln!("   ⚠️  Failed to shred encrypted file: {}", e);
+                            eprintln!("   Failed to shred encrypted file: {}", e);
                         }
                     }
                     
@@ -499,27 +499,27 @@ fn run_batch_decrypt(config: &Config) -> Result<()> {
                         match SecureDelete::shred_standard(&meta_file, config.verbose) {
                             Ok(_) => {
                                 if config.verbose {
-                                    println!("   ✅ Metadata file securely deleted");
+                                    println!("   Metadata file securely deleted.");
                                 }
                             }
                             Err(e) => {
-                                eprintln!("   ⚠️  Failed to shred metadata file: {}", e);
+                                eprintln!("   Failed to shred metadata file: {}", e);
                             }
                         }
                     }
                 }
             }
             Err(e) => {
-                eprintln!("   ❌ Failed to decrypt {}: {}", file_path.display(), e);
+                eprintln!("   Failed to decrypt {}: {}", file_path.display(), e);
                 failed += 1;
             }
         }
     }
     
-    println!("\n🎯 Batch Decryption Complete:");
-    println!("   ✅ Successfully decrypted: {} files", successful);
+    println!("\nBatch decryption complete:");
+    println!("   Successfully decrypted: {} files", successful);
     if failed > 0 {
-        println!("   ❌ Failed to decrypt: {} files", failed);
+        println!("   Failed to decrypt: {} files", failed);
     }
     
     Ok(())
@@ -539,14 +539,7 @@ fn run_single_encrypt(config: &Config) -> Result<()> {
         // Regular password key
         key.as_bytes().to_vec()
     };
-    
-    // Pre-encryption integrity check if requested
-    let original_hmac = if config.verify_integrity {
-        Some(IntegrityVerifier::pre_encrypt_check_hmac(&config.source_path, &key_bytes, config.verbose)?)
-    } else {
-        None
-    };
-    
+
     // Determine output path
     let output_path = match &config.output_path {
         Some(path) => path.clone(),
@@ -561,38 +554,71 @@ fn run_single_encrypt(config: &Config) -> Result<()> {
     let temp_dir = tempfile::tempdir()
         .context("Failed to create temporary directory")?;
 
-    let file_to_encrypt = if config.compress {
+    // Decide which file to encrypt and where to run integrity checks.
+    // For compressed flows, we hash the compressed archive; for
+    // uncompressed flows, we only hash regular files (not directories).
+    let (file_to_encrypt, original_hmac) = if config.compress {
         // Step 1: Compress with 7zip
         let compressed_file = temp_dir.path().join("compressed.7z");
         if config.verbose {
-            println!("📦 Compressing {} -> {}", config.source_path.display(), compressed_file.display());
+            println!("Compressing {} -> {}", config.source_path.display(), compressed_file.display());
         }
-        compression_engine.compress(&config.source_path, &compressed_file)
+        compression_engine
+            .compress(&config.source_path, &compressed_file)
             .context("Compression failed")?;
-        compressed_file
+
+        let hmac = if config.verify_integrity {
+            Some(
+                IntegrityVerifier::pre_encrypt_check_hmac(
+                    &compressed_file,
+                    &key_bytes,
+                    config.verbose,
+                )?,
+            )
+        } else {
+            None
+        };
+
+        (compressed_file, hmac)
     } else {
-        // Use source file directly
-        config.source_path.clone()
+        if config.verify_integrity && config.source_path.is_file() {
+            let hmac = Some(
+                IntegrityVerifier::pre_encrypt_check_hmac(
+                    &config.source_path,
+                    &key_bytes,
+                    config.verbose,
+                )?,
+            );
+            (config.source_path.clone(), hmac)
+        } else {
+            if config.verify_integrity && config.verbose && !config.source_path.is_file() {
+                println!(
+                    "Skipping integrity check: source path is a directory and compression is disabled.",
+                );
+            }
+            (config.source_path.clone(), None)
+        }
     };
 
     // Step 2: Encrypt with selected algorithm
     if config.verbose {
-        println!("🔐 Encrypting with {:?}...", config.algorithm);
+        println!("Encrypting with {:?}...", config.algorithm);
     }
-    
-    crypto_engine.encrypt_file(&file_to_encrypt, &output_path, key)
+
+    crypto_engine
+        .encrypt_file(&file_to_encrypt, &output_path, key)
         .context("Encryption failed")?;
     
     // Add integrity metadata if requested
     if let Some(hmac) = original_hmac {
         IntegrityVerifier::add_metadata_hmac(&output_path, &hmac, &format!("{:?}", config.algorithm), &key_bytes)?;
         if config.verbose {
-            println!("✅ HMAC integrity metadata added to encrypted file");
+            println!("HMAC integrity metadata added to encrypted file.");
         }
     }
 
     if config.verbose {
-        println!("✅ Successfully encrypted: {}", output_path.display());
+        println!("Successfully encrypted: {}", output_path.display());
     }
     
     Ok(())
@@ -606,30 +632,30 @@ fn run_encrypt(config: &Config) -> Result<()> {
     let crypto_engine = CryptEngine::with_algorithm(config.algorithm);
 
     if config.verbose {
-        println!("🔧 Using algorithm: {:?}", config.algorithm);
-        println!("📦 Compression: {}", if config.compress { "enabled" } else { "disabled" });
+        println!("Using algorithm: {:?}", config.algorithm);
+        println!("Compression: {}", if config.compress { "enabled" } else { "disabled" });
     }
 
     // Generate or use provided key
     let key = match &config.key {
         Some(k) => {
             if config.verbose {
-                println!("🔑 Using provided key");
+                println!("Using provided key.");
             }
             k.clone()
         }
         None => {
             let generated_key = crypto_engine.generate_key();
-            println!("\n🔑 GENERATED ENCRYPTION KEY:");
+            println!("\nGENERATED ENCRYPTION KEY:");
             println!("   {}", generated_key);
-            println!("⚠️  IMPORTANT: Save this key securely - you'll need it for decryption!");
+            println!("IMPORTANT: Save this key securely - you'll need it for decryption!");
             println!("   Copy this key to a safe location before proceeding.");
             
             // Save key to file if specified
             if let Some(key_file) = &config.save_key_file {
                 match save_key_to_file(&generated_key, key_file) {
-                    Ok(()) => println!("💾 Key saved to file: {}", key_file),
-                    Err(e) => eprintln!("⚠️  Warning: Failed to save key to file: {}", e),
+                    Ok(()) => println!("Key saved to file: {}", key_file),
+                    Err(e) => eprintln!("Warning: Failed to save key to file: {}", e),
                 }
             }
             
@@ -691,7 +717,7 @@ fn run_decrypt(config: &Config) -> Result<()> {
     let compression_engine = CompressionEngine::new();
 
     if config.verbose {
-        println!("🔍 Auto-detecting encryption algorithm from file...");
+        println!("Auto-detecting encryption algorithm from file...");
     }
 
     // Create temporary directory for intermediate files
@@ -700,7 +726,7 @@ fn run_decrypt(config: &Config) -> Result<()> {
 
     // Step 1: Decrypt
     if config.verbose {
-        println!("🔓 Decrypting...");
+        println!("Decrypting...");
     }
     let decrypted_file = temp_dir.path().join("decrypted");
     crypto_engine.decrypt_file(&config.source_path, &decrypted_file, key)
@@ -712,7 +738,7 @@ fn run_decrypt(config: &Config) -> Result<()> {
     if was_compressed {
         // Step 2: Decompress
         if config.verbose {
-            println!("📦 Decompressing...");
+            println!("Decompressing...");
         }
         let output_dir = match &config.output_path {
             Some(path) => path.clone(),
@@ -732,7 +758,7 @@ fn run_decrypt(config: &Config) -> Result<()> {
             IntegrityVerifier::post_decrypt_check_hmac(&config.source_path, &decrypted_file, &key_bytes, config.verbose)?;
         }
         
-        println!("✅ Successfully decrypted and decompressed to: {}", output_dir.display());
+        println!("Successfully decrypted and decompressed to: {}", output_dir.display());
     } else {
         // Just copy the decrypted file
         let output_path = match &config.output_path {
@@ -752,7 +778,7 @@ fn run_decrypt(config: &Config) -> Result<()> {
             IntegrityVerifier::post_decrypt_check_hmac(&config.source_path, &output_path, &key_bytes, config.verbose)?;
         }
         
-        println!("✅ Successfully decrypted: {}", output_path.display());
+        println!("Successfully decrypted: {}", output_path.display());
     }
 
     // Shred encrypted file and meta file after successful decryption if requested
@@ -760,11 +786,11 @@ fn run_decrypt(config: &Config) -> Result<()> {
         match SecureDelete::shred_standard(&config.source_path, config.verbose) {
             Ok(_) => {
                 if config.verbose {
-                    println!("✅ Encrypted file securely deleted");
+                    println!("Encrypted file securely deleted.");
                 }
             }
             Err(e) => {
-                eprintln!("⚠️  Failed to shred encrypted file: {}", e);
+                eprintln!("Failed to shred encrypted file: {}", e);
             }
         }
         
@@ -784,11 +810,11 @@ fn run_decrypt(config: &Config) -> Result<()> {
             match SecureDelete::shred_standard(&meta_file, config.verbose) {
                 Ok(_) => {
                     if config.verbose {
-                        println!("✅ Metadata file securely deleted");
+                        println!("Metadata file securely deleted.");
                     }
                 }
                 Err(e) => {
-                    eprintln!("⚠️  Failed to shred metadata file: {}", e);
+                    eprintln!("Failed to shred metadata file: {}", e);
                 }
             }
         }
